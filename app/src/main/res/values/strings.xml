@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">גוונים</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="amitai_malka_1">Amitai Malka 1</string>
+    <string name="amitai_malka_2">Amitai Malka 2</string>
+    <string name="amitai_malka_3">Amitai Malka 3</string>
+    <string name="erel">Erel Fridman</string>
+    <string name="yoav">Yoav Malka</string>
+    <string name="ofir_1">Ofir Malka 1</string>
+    <string name="eitan">Eitan Kadosh</string>
+    <string name="shoam">Shoam Kadosh</string>
+    <string name="ofir_2">Ofir Malka 2</string>
+    <string name="roei">Roei Wald</string>
+    <string name="karen_katz">Karen Katz</string>
+    <string name="nancy_tillman">Nancy Tillman</string>
+    <string name="eric_carle">Eric Carle</string>
+    <string name="sandra_boynton">Sandra Boynton</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+</resources>

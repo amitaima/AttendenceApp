@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_favorites"
+            android:icon="@drawable/ic_favorite_black_24dp"
+            android:checked="true"
+            android:title="שמורים" />
+        <item
+            android:id="@+id/nav_office"
+            android:icon="@drawable/ic_headset_mic_black_24dp"
+            android:title="משרד" />
+        <item
+            android:id="@+id/nav_plastic"
+            android:icon="@drawable/ic_work_black_24dp"
+            android:title="פלסטיקה" />
+        <item
+            android:id="@+id/nav_factory"
+            android:icon="@drawable/ic_business_black_24dp"
+            android:title="ייצור - עכו" />
+        <item
+            android:id="@+id/nav_factory_afula"
+            android:icon="@drawable/ic_business_black_24dp"
+            android:title="ייצור - עפולה" />
+        <item
+            android:id="@+id/nav_all"
+            android:icon="@drawable/ic_apps_black_24dp"
+            android:title="הכל" />
+    </group>
+
+    <!--<item android:title="Communicate">
+        <menu>
+            <item
+                android:id="@+id/nav_share"
+                android:icon="@drawable/ic_menu_share"
+                android:title="Share" />
+            <item
+                android:id="@+id/nav_send"
+                android:icon="@drawable/ic_menu_send"
+                android:title="Send" />
+        </menu>
+    </item>-->
+
+</menu>

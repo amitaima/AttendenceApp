@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="הגדרות"
+        app:showAsAction="never" />
+    <group
+        android:id="@+id/action_group_sort"
+        android:orderInCategory="101"
+        android:title="מיון" >
+
+        <item
+            android:id="@+id/action_missing"
+            android:orderInCategory="102"
+            android:title="חסרים"/>
+        <item
+            android:id="@+id/action_late"
+            android:orderInCategory="103"
+            android:title="מאחרים" />
+        <item
+            android:id="@+id/action_on_time"
+            android:orderInCategory="104"
+            android:title="הגיעו בזמן" />
+        <item
+            android:id="@+id/action_all"
+            android:orderInCategory="105"
+            android:title="כולם" />
+
+    </group>
+</menu>

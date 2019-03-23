@@ -65,14 +65,14 @@ public class Favorites extends Fragment {
         getActivity().setTitle("שמורים");
         setHasOptionsMenu(true);
         //new Thread(new MainThread()).start();
-        FloatingActionButton fab = (FloatingActionButton) myView.findViewById(R.id.addFavorites);
-        fab.setOnClickListener(new View.OnClickListener() {
+//        FloatingActionButton fab = (FloatingActionButton) myView.findViewById(R.id.addFavorites);
+        /*fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Add To Favorites Button", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
-        });
+        });*/
         gvNamesFavorites = (GridView) myView.findViewById(R.id.gridviewNamesFavorites);
         textViewEmpty = (TextView) myView.findViewById(R.id.textViewEmpty);
 

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!--<item
+        android:id="@+id/nav_plastic"
+        android:icon="@drawable/ic_work_black_24dp"
+        android:title="פלסטיקה" />-->
+
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_favorites"
@@ -11,10 +16,6 @@
             android:id="@+id/nav_office"
             android:icon="@drawable/ic_headset_mic_black_24dp"
             android:title="משרד" />
-        <item
-            android:id="@+id/nav_plastic"
-            android:icon="@drawable/ic_work_black_24dp"
-            android:title="פלסטיקה" />
         <item
             android:id="@+id/nav_factory"
             android:icon="@drawable/ic_business_black_24dp"

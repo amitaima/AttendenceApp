@@ -93,9 +93,7 @@ public class EmployeesAdapter extends BaseAdapter {
             imageViewStatus.setImageResource(R.drawable.red_dot);
         }
 
-        Context context = imageViewEmployee.getContext();
-        String imgName = "e"+employee.getImageName();
-        int id = context.getResources().getIdentifier(imgName, "drawable", context.getPackageName());
+        int id = (int) employee.getImgId();
         if (id!=0){
             imageViewEmployee.setImageResource(id);
         } else{

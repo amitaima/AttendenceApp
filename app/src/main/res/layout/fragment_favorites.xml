@@ -28,7 +28,7 @@
         android:stretchMode="columnWidth"
         />
 
-    <android.support.design.widget.FloatingActionButton
+    <!--<android.support.design.widget.FloatingActionButton
         android:id="@+id/addFavorites"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -36,6 +36,6 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@drawable/ic_action_name" />
+        app:srcCompat="@drawable/ic_action_name" />-->
 
 </RelativeLayout>

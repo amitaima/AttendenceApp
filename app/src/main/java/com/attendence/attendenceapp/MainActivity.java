@@ -1,6 +1,7 @@
 package com.attendence.attendenceapp;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -49,9 +50,9 @@ public class MainActivity extends AppCompatActivity
     public int favoritesEdited = 0;
     public int currentFragment;
     private static final String favoritedEmployeeNamesKey = "favoritedEmployeeNamesKey";
-    public final String IP = "192.168.43.43"; // Internet Phone
+//    public final String IP = "192.168.43.43"; // Internet Phone
 //    public final String IP = "10.100.102.199"; // Internet Home
-//    public final String IP = "0.0.0.0"; // Internet Phone
+    public final String IP = "46.116.114.148";
     public final int PORT = 6000;
     public Socket socket;
     public DataOutputStream dos;
@@ -125,12 +126,12 @@ public class MainActivity extends AppCompatActivity
                 favoritedEmployeeNames.add(employee.getName());
             }
         }
-        changeT.start();
-        try {
-            changeT.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        changeT.start();
+//        try {
+//            changeT.join();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
         // save that list to outState for later
         outState.putStringArrayList(favoritedEmployeeNamesKey, favoritedEmployeeNames);
@@ -228,12 +229,12 @@ public class MainActivity extends AppCompatActivity
                     .replace(R.id.contentFrame,
                             new Office())
                     .commit();
-        } else if (id == R.id.nav_plastic) {
+        } /*else if (id == R.id.nav_plastic) {
             fragmentManager.beginTransaction()
                     .replace(R.id.contentFrame,
                             new plastic())
                     .commit();
-        } else if (id == R.id.nav_factory) {
+        } */else if (id == R.id.nav_factory) {
             fragmentManager.beginTransaction()
                     .replace(R.id.contentFrame,
                             new Factory())
@@ -325,6 +326,8 @@ public class MainActivity extends AppCompatActivity
                                 recievedMsg += Character.toString ((char) buffer[i]);
                             }*/
                             splitedStr = recievedMsg.split("\\s+");
+                            String imgName = "e"+splitedStr[0];
+                            int imgId = getResources().getIdentifier(imgName, "drawable", getPackageName());
                             if (Integer.parseInt(splitedStr[3]) != 0) {
                                 isFav = true;
                             } else {
@@ -332,11 +335,12 @@ public class MainActivity extends AppCompatActivity
                             }
                             employees[i] = new Employee(
                                     splitedStr[1] + " " + splitedStr[2],
-                                    splitedStr[4],
+                                    splitedStr[0],
                                     Integer.parseInt(splitedStr[4]),
                                     Integer.parseInt(splitedStr[0]),
                                     isFav,
-                                    Integer.parseInt(splitedStr[5]));
+                                    Integer.parseInt(splitedStr[5]),
+                                    imgId);
                             dos.writeUTF("recieved");
                             dos.flush();
                             favEmployeesBefore[i] = isFav;

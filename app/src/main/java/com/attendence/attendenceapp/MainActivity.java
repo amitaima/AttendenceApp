@@ -3,6 +3,7 @@ package com.attendence.attendenceapp;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
@@ -15,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -48,16 +51,16 @@ public class MainActivity extends AppCompatActivity
     public Employee[] employees;
     public Boolean[] favEmployeesBefore;
     public int favoritesEdited = 0;
-    public int currentFragment;
+    public int currentFragment, connectionSuccess=0;
     private static final String favoritedEmployeeNamesKey = "favoritedEmployeeNamesKey";
 //    public final String IP = "192.168.43.43"; // Internet Phone
 //    public final String IP = "10.100.102.199"; // Internet Home
-    public final String IP = "46.116.114.148";
+    public final String IP = "46.116.114.148"; // Home Router
     public final int PORT = 6000;
     public Socket socket;
     public DataOutputStream dos;
-    private Thread mainT, changeT;
-    public Thread statusThread;
+    private Thread changeT;
+    public Thread mainT, statusThread;
     public boolean threadRun = true;
     InputStream is;
 
@@ -67,7 +70,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         mainT = new Thread(new MainThread());
         mainT.start();
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addFavorites);
@@ -89,30 +91,41 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         android.app.FragmentManager fragmentManager = getFragmentManager();
         try {
-//            TimeUnit.MILLISECONDS.sleep(2000);
             mainT.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        if(connectionSuccess==0){
+            Snackbar.make(findViewById(R.id.constraintLayout), "The app could'nt connect to the server\nPlease try again later",
+                    Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+            Handler handler = new Handler();
 
-        for (int i = 0; i < employees.length; i++) {
-            for (int j = i + 1; j < employees.length; j++) {
-                if (employees[i].getName().compareTo(employees[j].getName()) > 0) {
-                    Employee temp = employees[i];
-                    employees[i] = employees[j];
-                    employees[j] = temp;
-                    Boolean tempFav = favEmployeesBefore[i];
-                    favEmployeesBefore[i] = favEmployeesBefore[j];
-                    favEmployeesBefore[j] = tempFav;
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    finish();
+                }
+            }, 3000);
+        }
+        else {
+            for (int i = 0; i < employees.length; i++) {
+                for (int j = i + 1; j < employees.length; j++) {
+                    if (employees[i].getName().compareTo(employees[j].getName()) > 0) {
+                        Employee temp = employees[i];
+                        employees[i] = employees[j];
+                        employees[j] = temp;
+                        Boolean tempFav = favEmployeesBefore[i];
+                        favEmployeesBefore[i] = favEmployeesBefore[j];
+                        favEmployeesBefore[j] = tempFav;
+                    }
                 }
             }
+
+            fragmentManager.beginTransaction()
+                    .replace(R.id.contentFrame,
+                            new Favorites())
+                    .commit();
         }
-
-        fragmentManager.beginTransaction()
-                .replace(R.id.contentFrame,
-                        new Favorites())
-                .commit();
-
     }
 
     @Override
@@ -239,12 +252,12 @@ public class MainActivity extends AppCompatActivity
                     .replace(R.id.contentFrame,
                             new Factory())
                     .commit();
-        } else if (id == R.id.nav_factory_afula) {
+        } /*else if (id == R.id.nav_factory_afula) {
             fragmentManager.beginTransaction()
                     .replace(R.id.contentFrame,
                             new FactoryAfula())
                     .commit();
-        } else if (id == R.id.nav_all) {
+        } */else if (id == R.id.nav_all) {
             fragmentManager.beginTransaction()
                     .replace(R.id.contentFrame,
                             new All())
@@ -262,7 +275,15 @@ public class MainActivity extends AppCompatActivity
         public void run() {
             try {
                 int i;
-                socket = new Socket(IP, PORT);
+//                socket = new Socket(IP, PORT);
+                socket = new Socket();
+                socket.connect(new InetSocketAddress(IP,PORT),5000);
+                socket.setSoTimeout(5000);
+                if (socket == null) {
+                    connectionSuccess = 0;
+                    return;
+                }
+                connectionSuccess=1;
                 dos = new DataOutputStream(socket.getOutputStream());
                 String message = "get num employees";
                 dos.writeUTF(message);

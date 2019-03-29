@@ -42,6 +42,7 @@ public class Factory extends Fragment {
     int currId;
     int firstClickW=0, firstClickM=0;
     Dialog myDialog;
+    Thread runThread;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -403,13 +404,19 @@ public class Factory extends Fragment {
             public void run() {
                 mTimerHandler.post(new Runnable() {
                     public void run(){
-                        new Thread(new alwaysRunThread()).start();
+                        runThread = new Thread(new alwaysRunThread());
+                        runThread.start();
+                        try {
+                            runThread.join();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
             }
         };
 
-        mTimer1.schedule(mTt1, 1, 60000);
+        mTimer1.schedule(mTt1, 1, 30000);
     }
 
     class alwaysRunThread implements  Runnable {
@@ -425,7 +432,7 @@ public class Factory extends Fragment {
 //                message = "run attendence thread";
                 message = "get attendence";
                 ((MainActivity) getActivity()).dos.writeUTF(message);
-                byte[] buffer = new byte[12];
+                byte[] buffer = new byte[10];
                 String[] splitedStr;
                 int id, status, i;
                 while (!recievedMsg.toLowerCase().contains("done")){

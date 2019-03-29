@@ -4,7 +4,11 @@
     <!--<item
         android:id="@+id/nav_plastic"
         android:icon="@drawable/ic_work_black_24dp"
-        android:title="פלסטיקה" />-->
+        android:title="פלסטיקה" />
+        <item
+            android:id="@+id/nav_factory_afula"
+            android:icon="@drawable/ic_business_black_24dp"
+            android:title="ייצור - עפולה" />-->
 
     <group android:checkableBehavior="single">
         <item
@@ -20,10 +24,6 @@
             android:id="@+id/nav_factory"
             android:icon="@drawable/ic_business_black_24dp"
             android:title="ייצור - עכו" />
-        <item
-            android:id="@+id/nav_factory_afula"
-            android:icon="@drawable/ic_business_black_24dp"
-            android:title="ייצור - עפולה" />
         <item
             android:id="@+id/nav_all"
             android:icon="@drawable/ic_apps_black_24dp"

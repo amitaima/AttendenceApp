@@ -73,6 +73,26 @@ public class Favorites extends Fragment {
                         .setAction("Action", null).show();
             }
         });*/
+
+//        try {
+//            ((MainActivity) getActivity()).mainT.join();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//
+//        for (int i = 0; i < ((MainActivity) getActivity()).employees.length; i++) {
+//            for (int j = i + 1; j < ((MainActivity) getActivity()).employees.length; j++) {
+//                if (((MainActivity) getActivity()).employees[i].getName().compareTo(((MainActivity) getActivity()).employees[j].getName()) > 0) {
+//                    Employee temp = ((MainActivity) getActivity()).employees[i];
+//                    ((MainActivity) getActivity()).employees[i] = ((MainActivity) getActivity()).employees[j];
+//                    ((MainActivity) getActivity()).employees[j] = temp;
+//                    Boolean tempFav = ((MainActivity) getActivity()).favEmployeesBefore[i];
+//                    ((MainActivity) getActivity()).favEmployeesBefore[i] = ((MainActivity) getActivity()).favEmployeesBefore[j];
+//                    ((MainActivity) getActivity()).favEmployeesBefore[j] = tempFav;
+//                }
+//            }
+//        }
+
         gvNamesFavorites = (GridView) myView.findViewById(R.id.gridviewNamesFavorites);
         textViewEmpty = (TextView) myView.findViewById(R.id.textViewEmpty);
 
@@ -456,7 +476,6 @@ public class Favorites extends Fragment {
                 String recievedMsg = "";
 //                InputStream is;
                 ((MainActivity) getActivity()).dos = new DataOutputStream(((MainActivity) getActivity()).socket.getOutputStream());
-                message = "run attendence thread";
                 message = "get attendence";
                 ((MainActivity) getActivity()).dos.writeUTF(message);
                 byte[] buffer = new byte[10];

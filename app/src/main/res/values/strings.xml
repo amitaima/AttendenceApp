@@ -21,6 +21,7 @@
     <string name="nancy_tillman">Nancy Tillman</string>
     <string name="eric_carle">Eric Carle</string>
     <string name="sandra_boynton">Sandra Boynton</string>
+    <string name="logo_loading">logo_loading</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

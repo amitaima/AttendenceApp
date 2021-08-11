@@ -17,7 +17,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -32,7 +36,8 @@ public class All extends Fragment {
     View myView;
     GridView gvNamesAll;
     EmployeesAdapter employeeAdapter;
-    public Employee[] empsMissing, empsLate, empsOnTime;
+    public Employee[] allEmployees;
+    public Employee[] empsMissing, empsLate, empsOnTime,empsPresent;
     ArrayList<String> listItems;
     ArrayList<String> listItemsWeek;
     ArrayList<String> listItemsMonth;
@@ -41,6 +46,7 @@ public class All extends Fragment {
     int currId;
     int firstClickW=0, firstClickM=0;
     Dialog myDialog;
+    private ImageLoader imageLoader;
 
 
     @Override
@@ -49,6 +55,24 @@ public class All extends Fragment {
         myView = inflater.inflate(R.layout.fragment_all, container, false);
         getActivity().setTitle("הכל");
         setHasOptionsMenu(true);
+        imageLoader = ImageLoader.getInstance();
+
+//        int i=0;
+//        for (Employee employee : (((MainActivity) getActivity()).employees)) { //
+//            if (employee == null) {break;}
+//            else {
+//                i++;
+//            }
+//        }
+//        allEmployees = new Employee[i];
+//        i=0;
+//        for (Employee employee : (((MainActivity) getActivity()).employees)) {
+//            if (employee == null) {break;}
+//            else {
+//                allEmployees[i] = employee;
+//                i++;
+//            }
+//        }
 
         startTimer();
         gvNamesAll = (GridView) myView.findViewById(R.id.gridviewNamesAll);
@@ -57,9 +81,9 @@ public class All extends Fragment {
         gvNamesAll.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                Snackbar.make(v, "pressed image id: " +  + (((MainActivity) getActivity()).employees)[position].getId(), Snackbar.LENGTH_LONG)
+                Snackbar.make(v, "מספר עובד: " +  + (((MainActivity) getActivity()).employees)[position].getId(), Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                history_dialog((((MainActivity) getActivity()).employees)[position].getId());
+                history_dialog((((MainActivity) getActivity()).employees)[position].getId(),(((MainActivity) getActivity()).employees)[position]);
             }
         });
 
@@ -69,7 +93,7 @@ public class All extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        int m=0,l=0,o=0;
+        int m=0,l=0,o=0,p=0;
         for (Employee employee : (((MainActivity) getActivity()).employees)) { //
             if (employee == null) {break;}
             if (employee.getStatus() == 0 || employee.getStatus()==3) {
@@ -81,11 +105,13 @@ public class All extends Fragment {
             }
         }
         empsMissing = new Employee[m];
+        empsPresent = new Employee[l+o];
         empsLate = new Employee[l];
         empsOnTime = new Employee[o];
         l=0;
         m=0;
         o=0;
+        p=0;
         for (Employee employee : (((MainActivity) getActivity()).employees)) {
             if (employee == null) {break;}
             if (employee.getStatus() == 0 || employee.getStatus()==3) {
@@ -93,9 +119,13 @@ public class All extends Fragment {
                 m++;
             } else if (employee.getStatus() == 1) {
                 empsLate[l] = employee;
+                empsPresent[p] = employee;
+                p++;
                 l++;
             } else if (employee.getStatus() == 2) {
                 empsOnTime[o] = employee;
+                empsPresent[p] = employee;
+                p++;
                 o++;
             }
         }
@@ -103,6 +133,11 @@ public class All extends Fragment {
 
             case R.id.action_missing:
                 employeeAdapter = new EmployeesAdapter(getActivity(), empsMissing);
+                gvNamesAll.setAdapter(employeeAdapter);
+                employeeAdapter.notifyDataSetChanged();
+                return true;
+            case R.id.action_present:
+                employeeAdapter = new EmployeesAdapter(getActivity(), empsPresent);
                 gvNamesAll.setAdapter(employeeAdapter);
                 employeeAdapter.notifyDataSetChanged();
                 return true;
@@ -127,7 +162,7 @@ public class All extends Fragment {
     }
 
     // Dialog to pick font size
-    public void history_dialog(int id) {
+    public void history_dialog(int id,Employee employee) {
         myDialog = new Dialog(getActivity());
         myDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         myDialog.setContentView(R.layout.history_dialog);
@@ -143,6 +178,25 @@ public class All extends Fragment {
         adapter=new listViewAdapter(getActivity(), android.R.layout.simple_list_item_1, listItems);
         historyList.setAdapter(adapter);
         currId = id;
+
+        ImageView employeeImg = (ImageView) myDialog.findViewById(R.id.employee_image);
+        TextView employeeId = (TextView) myDialog.findViewById(R.id.employee_id);
+        TextView employeeName = (TextView) myDialog.findViewById(R.id.employee_name);
+        TextView employeeDepartment = (TextView) myDialog.findViewById(R.id.employee_department);
+        if (!employee.getImageName().contains("-")){
+            String imageUri = "https://i.imgur.com/" + employee.getImageName() + ".jpg";
+            imageLoader.displayImage(imageUri, employeeImg);
+        } else {
+            employeeImg.setImageResource(R.drawable.null1);
+        }
+        employeeId.setText("מספר זהות: " + employee.getId());
+        employeeName.setText("שם: " + employee.getName());
+        int dep = employee.getDepartment();
+        if (dep == 0){employeeDepartment.setText("מחלקה: משרד");}
+        else if (dep == 1){employeeDepartment.setText("מחלקה: פלסטיקה");}
+        else if (dep == 2){employeeDepartment.setText("מחלקה: ייצור");}
+        else if (dep == 3){employeeDepartment.setText("מחלקה: ייצור");}
+        else {employeeDepartment.setText("מחלקה: כללי");}
 
         Thread weekThread = new Thread(new weekThread());
         weekThread.start();

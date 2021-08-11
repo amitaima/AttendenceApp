@@ -21,6 +21,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -32,6 +35,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity
@@ -55,8 +59,10 @@ public class MainActivity extends AppCompatActivity
     public int currentFragment, connectionSuccess=0;
     private static final String favoritedEmployeeNamesKey = "favoritedEmployeeNamesKey";
 //    public final String IP = "192.168.43.43"; // Internet Phone
-//    public final String IP = "10.100.102.50"; // Internet Home
-    public final String IP = "93.173.187.214"; // Home Router
+//    public final String IP = "10.100.102.116"; // Internet Home
+//    public final String IP = "46.116.86.71"; // Home Router
+//    public final String IP = "62.219.229.28"; // Gvanim Router
+    public final String IP = "192.168.5.200";
     public final int PORT = 443;
     public Socket socket;
     public DataOutputStream dos;
@@ -82,6 +88,9 @@ public class MainActivity extends AppCompatActivity
             }
         });*/
 
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(getApplicationContext()).build();
+        ImageLoader.getInstance().init(config);
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -106,11 +115,11 @@ public class MainActivity extends AppCompatActivity
                 public void run() {
                     finish();
                 }
-            }, 3000);
+            }, 4000);
         }
         else {
-            for (int i = 0; i < employees.length; i++) {
-                for (int j = i + 1; j < employees.length; j++) {
+            for (int i = 0; i < employees.length-2; i++) {
+                for (int j = i + 1; j < employees.length-2; j++) {
                     if (employees[i].getName().compareTo(employees[j].getName()) > 0) {
                         Employee temp = employees[i];
                         employees[i] = employees[j];
@@ -121,7 +130,6 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
             }
-
             fragmentManager.beginTransaction()
                     .replace(R.id.contentFrame,
                             new Favorites())
@@ -310,49 +318,91 @@ public class MainActivity extends AppCompatActivity
                     while (true) {
                         bufferLen = new byte[1];
                         is.read(bufferLen);
-                        recievedMsg = new String(bufferLen, "UTF-8");
+                        recievedMsg = new String(bufferLen, "UTF-8"); //length of length
                         if (recievedMsg.equals("0")) {
                             dos.writeUTF("recieved");
                             dos.flush();
                             break;
                         }
-                        bufferLen = new byte[Integer.parseInt(recievedMsg)];
+                        bufferLen = new byte[Integer.parseInt(recievedMsg)]; //length of chars to receive
                         dos.writeUTF("recieved");
                         dos.flush();
                         is.read(bufferLen);
                         recievedMsg = new String(bufferLen, "UTF-8");
-                        buffer = new byte[Integer.parseInt(recievedMsg)];
+                        buffer = new byte[Integer.parseInt(recievedMsg)]; // chars to receive
                         dos.writeUTF("recieved");
                         dos.flush();
                         is.read(buffer);
                         recievedMsg = new String(buffer, "UTF-8");
                         recievedMsgLong+=recievedMsg;
+//                        while (is.available() > 0) {
+//                            is.read(buffer);
+//                            recievedMsg = new String(buffer, "UTF-8");
+////                            while (!recievedMsgLong.contains(recievedMsg.split(",")[i])) {
+////                                recievedMsgLong+=recievedMsg.split(",")[i] + ",";
+////                                i++;
+////                            }
+//                            for (i=0;i<recievedMsg.split(",").length;i++) {
+//                                if(!recievedMsgLong.contains(recievedMsg.split(",")[i])) {
+//                                    recievedMsgLong += recievedMsg.split(",")[i] + ",";
+//                                } else{break;}
+//                            }
+//                        }
+                        if (recievedMsgLong.contains("/")){ //Checks if "/" in reveivedmsg then stop receiving
+                            recievedMsgLong = recievedMsgLong.split("/")[0];
+                            while (is.available() > 0) {
+                                is.read(buffer);
+                            }
+                        } else {
+                            while (is.available() > 0) {
+                                is.read(buffer);
+                                recievedMsg = new String(buffer, "UTF-8");
+                                for (i = 0; i < recievedMsg.split(",").length; i++) {
+                                    if (recievedMsgLong.contains("/")) {
+                                        recievedMsgLong = recievedMsgLong.split("/")[0];
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                         Log.i("MyPrintingTab", Integer.toString(recievedMsg.length()));
+                        is.skip(is.available());
                         dos.writeUTF("recieved");
                         dos.flush();
                     }
                     splitedList = recievedMsgLong.split(",");
+                    for(i=0;i<splitedList.length;i++){
+                        splitedStr = splitedList[i].split("\\s+");
+                        if (splitedStr.length!=7) {
+                            List<String> list = new ArrayList<String>(Arrays.asList(splitedList));
+                            list.remove(splitedList[i]);
+                            splitedList = list.toArray(new String[0]);
+                        }
+                    }
                     employees = new Employee[splitedList.length];
                     favEmployeesBefore = new Boolean[splitedList.length];
                     for(i=0;i<splitedList.length;i++){
                         splitedStr = splitedList[i].split("\\s+");
                         String imgName = "e"+splitedStr[0];
                         int imgId = getResources().getIdentifier(imgName, "drawable", getPackageName());
+//                        Log.i("imgId"," " + imgId);
                         Log.i("MyPrintingTab",splitedList[i]);
                         if (Integer.parseInt(splitedStr[3]) != 0) {
                             isFav = true;
                         } else {
                             isFav = false;
                         }
-                        employees[i] = new Employee(
-                                splitedStr[1] + " " + splitedStr[2],
-                                splitedStr[0],
-                                Integer.parseInt(splitedStr[4]),
-                                Integer.parseInt(splitedStr[0]),
-                                isFav,
-                                Integer.parseInt(splitedStr[5]),
-                                imgId);
-                        favEmployeesBefore[i] = isFav;
+                        if (splitedStr.length==7) {
+                            employees[i] = new Employee(
+                                    splitedStr[1] + " " + splitedStr[2],
+                                    splitedStr[6],
+                                    Integer.parseInt(splitedStr[4]),
+                                    Integer.parseInt(splitedStr[0]),
+                                    isFav,
+                                    Integer.parseInt(splitedStr[5]),
+                                    imgId);
+                            favEmployeesBefore[i] = isFav;
+                        }
                     }
                     dos.writeUTF("recieved");
                     dos.flush();

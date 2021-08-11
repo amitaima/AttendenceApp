@@ -17,9 +17,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.attendence.attendenceapp.R;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -35,7 +38,7 @@ public class plastic extends Fragment {
     View myView;
     GridView gvNamesPlastic;
     public Employee[] employeesPlastic;
-    public Employee[] empsMissing, empsLate, empsOnTime;
+    public Employee[] empsMissing, empsLate, empsOnTime, empsPresent;
     public EmployeesAdapter employeeAdapter;
     ArrayList<String> listItems;
     ArrayList<String> listItemsWeek;
@@ -44,6 +47,7 @@ public class plastic extends Fragment {
     int currId;
     int firstClickW=0, firstClickM=0;
     Dialog myDialog;
+    private ImageLoader imageLoader;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -51,6 +55,7 @@ public class plastic extends Fragment {
         myView = inflater.inflate(R.layout.fragment_plastic, container, false);
         getActivity().setTitle("פלסטיקה");
         setHasOptionsMenu(true);
+        imageLoader = ImageLoader.getInstance();
 
         int i=0;
         for (Employee employee : (((MainActivity) getActivity()).employees)) { //
@@ -76,9 +81,9 @@ public class plastic extends Fragment {
         gvNamesPlastic.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                Snackbar.make(v, "pressed image id: " +  + employeesPlastic[position].getId(), Snackbar.LENGTH_LONG)
+                Snackbar.make(v, "מספר עובד: " +  + employeesPlastic[position].getId(), Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                history_dialog(employeesPlastic[position].getId());
+                history_dialog(employeesPlastic[position].getId(),employeesPlastic[position]);
             }
         });
         return myView;
@@ -87,7 +92,7 @@ public class plastic extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        int m=0,l=0,o=0;
+        int m=0,l=0,o=0,p=0;
         for (Employee employee : employeesPlastic) { //
             if (employee == null) {break;}
             if (employee.getStatus() == 0 || employee.getStatus()==3) {
@@ -99,11 +104,13 @@ public class plastic extends Fragment {
             }
         }
         empsMissing = new Employee[m];
+        empsPresent = new Employee[l+o];
         empsLate = new Employee[l];
         empsOnTime = new Employee[o];
         l=0;
         m=0;
         o=0;
+        p=0;
         for (Employee employee : employeesPlastic) {
             if (employee == null) {break;}
             if (employee.getStatus() == 0 || employee.getStatus()==3) {
@@ -111,9 +118,13 @@ public class plastic extends Fragment {
                 m++;
             } else if (employee.getStatus() == 1) {
                 empsLate[l] = employee;
+                empsPresent[p]= employee;
+                p++;
                 l++;
             } else if (employee.getStatus() == 2) {
                 empsOnTime[o] = employee;
+                empsPresent[p]= employee;
+                p++;
                 o++;
             }
         }
@@ -121,6 +132,11 @@ public class plastic extends Fragment {
 
             case R.id.action_missing:
                 employeeAdapter = new EmployeesAdapter(getActivity(), empsMissing);
+                gvNamesPlastic.setAdapter(employeeAdapter);
+                employeeAdapter.notifyDataSetChanged();
+                return true;
+            case R.id.action_present:
+                employeeAdapter = new EmployeesAdapter(getActivity(), empsPresent);
                 gvNamesPlastic.setAdapter(employeeAdapter);
                 employeeAdapter.notifyDataSetChanged();
                 return true;
@@ -145,7 +161,7 @@ public class plastic extends Fragment {
     }
 
     // Dialog to pick font size
-    public void history_dialog(int id) {
+    public void history_dialog(int id,Employee employee) {
         myDialog = new Dialog(getActivity());
         myDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         myDialog.setContentView(R.layout.history_dialog);
@@ -161,6 +177,20 @@ public class plastic extends Fragment {
         adapter=new listViewAdapter(getActivity(), android.R.layout.simple_list_item_1, listItems);
         historyList.setAdapter(adapter);
         currId = id;
+
+        ImageView employeeImg = (ImageView) myDialog.findViewById(R.id.employee_image);
+        TextView employeeId = (TextView) myDialog.findViewById(R.id.employee_id);
+        TextView employeeName = (TextView) myDialog.findViewById(R.id.employee_name);
+        TextView employeeDepartment = (TextView) myDialog.findViewById(R.id.employee_department);
+        if (!employee.getImageName().contains("-")){
+            String imageUri = "https://i.imgur.com/" + employee.getImageName() + ".jpg";
+            imageLoader.displayImage(imageUri, employeeImg);
+        } else {
+            employeeImg.setImageResource(R.drawable.null1);
+        }
+        employeeId.setText("מספר זהות: " + employee.getId());
+        employeeName.setText("שם: " + employee.getName());
+        employeeDepartment.setText("מחלקה: פלסטיקה");
 
         Thread weekThread = new Thread(new weekThread());
         weekThread.start();

@@ -29,8 +29,8 @@ public class Employee {
     }
 
     public String getImageName() {
-        return Integer.toString(this.id);
-// return this.imageName;
+//        return Integer.toString(this.id);
+        return this.imageName;
     }
 
     public int getDepartment(){

@@ -16,16 +16,20 @@
             android:orderInCategory="102"
             android:title="חסרים"/>
         <item
-            android:id="@+id/action_late"
+            android:id="@+id/action_present"
             android:orderInCategory="103"
+            android:title="נוכחים"/>
+        <item
+            android:id="@+id/action_late"
+            android:orderInCategory="104"
             android:title="מאחרים" />
         <item
             android:id="@+id/action_on_time"
-            android:orderInCategory="104"
+            android:orderInCategory="105"
             android:title="הגיעו בזמן" />
         <item
             android:id="@+id/action_all"
-            android:orderInCategory="105"
+            android:orderInCategory="106"
             android:title="כולם" />
 
     </group>

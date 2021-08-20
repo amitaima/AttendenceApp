@@ -118,8 +118,8 @@ public class MainActivity extends AppCompatActivity
             }, 4000);
         }
         else {
-            for (int i = 0; i < employees.length-2; i++) {
-                for (int j = i + 1; j < employees.length-2; j++) {
+            for (int i = 0; i < employees.length; i++) {
+                for (int j = i + 1; j < employees.length; j++) {
                     if (employees[i].getName().compareTo(employees[j].getName()) > 0) {
                         Employee temp = employees[i];
                         employees[i] = employees[j];
@@ -251,12 +251,12 @@ public class MainActivity extends AppCompatActivity
                     .replace(R.id.contentFrame,
                             new Office())
                     .commit();
-        } /*else if (id == R.id.nav_plastic) {
+        } else if (id == R.id.nav_plastic) {
             fragmentManager.beginTransaction()
                     .replace(R.id.contentFrame,
                             new plastic())
                     .commit();
-        } */else if (id == R.id.nav_factory) {
+        } else if (id == R.id.nav_factory) {
             fragmentManager.beginTransaction()
                     .replace(R.id.contentFrame,
                             new Factory())

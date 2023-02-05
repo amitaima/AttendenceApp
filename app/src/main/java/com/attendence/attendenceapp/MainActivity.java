@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -20,6 +21,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -31,6 +35,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity
@@ -54,9 +59,11 @@ public class MainActivity extends AppCompatActivity
     public int currentFragment, connectionSuccess=0;
     private static final String favoritedEmployeeNamesKey = "favoritedEmployeeNamesKey";
 //    public final String IP = "192.168.43.43"; // Internet Phone
-//    public final String IP = "10.100.102.199"; // Internet Home
-    public final String IP = "46.116.114.148"; // Home Router
-    public final int PORT = 6000;
+//    public final String IP = "10.100.102.116"; // Internet Home
+//    public final String IP = "46.116.86.71"; // Home Router
+//    public final String IP = "62.219.229.28"; // Gvanim Router
+    public final String IP = "192.168.5.200";
+    public final int PORT = 443;
     public Socket socket;
     public DataOutputStream dos;
     private Thread changeT;
@@ -80,6 +87,9 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });*/
+
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(getApplicationContext()).build();
+        ImageLoader.getInstance().init(config);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -105,7 +115,7 @@ public class MainActivity extends AppCompatActivity
                 public void run() {
                     finish();
                 }
-            }, 3000);
+            }, 4000);
         }
         else {
             for (int i = 0; i < employees.length; i++) {
@@ -120,7 +130,6 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
             }
-
             fragmentManager.beginTransaction()
                     .replace(R.id.contentFrame,
                             new Favorites())
@@ -242,12 +251,12 @@ public class MainActivity extends AppCompatActivity
                     .replace(R.id.contentFrame,
                             new Office())
                     .commit();
-        } /*else if (id == R.id.nav_plastic) {
+        } else if (id == R.id.nav_plastic) {
             fragmentManager.beginTransaction()
                     .replace(R.id.contentFrame,
                             new plastic())
                     .commit();
-        } */else if (id == R.id.nav_factory) {
+        } else if (id == R.id.nav_factory) {
             fragmentManager.beginTransaction()
                     .replace(R.id.contentFrame,
                             new Factory())
@@ -269,6 +278,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+
     class MainThread implements Runnable {
 
         @Override
@@ -285,104 +295,246 @@ public class MainActivity extends AppCompatActivity
                 }
                 connectionSuccess=1;
                 dos = new DataOutputStream(socket.getOutputStream());
-                String message = "get num employees";
+                String message = "get employees";
                 dos.writeUTF(message);
                 dos.flush();
-                byte[] bufferLen = new byte[5];
-                String recievedMsg = "";
+                byte[] bufferLen = new byte[10];
+                String recievedMsg = "", recievedMsgLong="";
                 is = socket.getInputStream();
-                is.read(bufferLen);
-                recievedMsg = new String(bufferLen, "UTF-8");
-                employees = new Employee[Integer.parseInt(recievedMsg)];
-                favEmployeesBefore = new Boolean[Integer.parseInt(recievedMsg)];
-                dos = new DataOutputStream(socket.getOutputStream());
-                message = "get employees";
-                dos.writeUTF(message);
-                dos.flush();
                 is.read(bufferLen);
                 recievedMsg = new String(bufferLen, "UTF-8");
                 if (!recievedMsg.contains("recieved")){
                     System.out.print("error: could'nt get 'recieved' from server after sending 'get employees'.");
                 }
-                if(socket.getInputStream()!=null)
-                {
+                if(socket.getInputStream()!=null) {
                     recievedMsg = "";
                     is = socket.getInputStream();
-                    bufferLen = new byte[2];
                     byte[] buffer;
                     int read; // array of binary of the given messgage!
-                    String[] splitedStr;
+                    String[] splitedStr,splitedList = new String[0];
                     Boolean isFav = false;
                     i=0;
-                    while(!recievedMsg.toLowerCase().contains("done")){
-                        // Getting len of next message:
-                        try {
-                            is = socket.getInputStream();
-                            dos = new DataOutputStream(socket.getOutputStream());
-                            is.read(bufferLen);
-                            recievedMsg = new String(bufferLen, "UTF-8");
-                            buffer = new byte[Integer.parseInt(recievedMsg)];
+                    dos = new DataOutputStream(socket.getOutputStream());
+                    while (true) {
+                        bufferLen = new byte[1];
+                        is.read(bufferLen);
+                        recievedMsg = new String(bufferLen, "UTF-8"); //length of length
+                        if (recievedMsg.equals("0")) {
                             dos.writeUTF("recieved");
                             dos.flush();
-                        } catch (Exception e){
-                            e.printStackTrace();
-                            buffer = new byte[40];
+                            break;
                         }
-                        try {
-                            // Getting next message:
-                            is = socket.getInputStream();
-                            dos = new DataOutputStream(socket.getOutputStream());
-                            //read = is.read(buffer);
-                            is.read(buffer);
-                            recievedMsg = new String(buffer, "UTF-8");
-                            if (recievedMsg.toLowerCase().contains("done")) {
-                                dos.writeUTF("closing s");
-                                dos.flush();
-                                socket.close(); // Only close socket at end of program
-                                dos.close();
-                                break;
+                        bufferLen = new byte[Integer.parseInt(recievedMsg)]; //length of chars to receive
+                        dos.writeUTF("recieved");
+                        dos.flush();
+                        is.read(bufferLen);
+                        recievedMsg = new String(bufferLen, "UTF-8");
+                        buffer = new byte[Integer.parseInt(recievedMsg)]; // chars to receive
+                        dos.writeUTF("recieved");
+                        dos.flush();
+                        is.read(buffer);
+                        recievedMsg = new String(buffer, "UTF-8");
+                        recievedMsgLong+=recievedMsg;
+//                        while (is.available() > 0) {
+//                            is.read(buffer);
+//                            recievedMsg = new String(buffer, "UTF-8");
+////                            while (!recievedMsgLong.contains(recievedMsg.split(",")[i])) {
+////                                recievedMsgLong+=recievedMsg.split(",")[i] + ",";
+////                                i++;
+////                            }
+//                            for (i=0;i<recievedMsg.split(",").length;i++) {
+//                                if(!recievedMsgLong.contains(recievedMsg.split(",")[i])) {
+//                                    recievedMsgLong += recievedMsg.split(",")[i] + ",";
+//                                } else{break;}
+//                            }
+//                        }
+                        if (recievedMsgLong.contains("/")){ //Checks if "/" in reveivedmsg then stop receiving
+                            recievedMsgLong = recievedMsgLong.split("/")[0];
+                            while (is.available() > 0) {
+                                is.read(buffer);
                             }
-                            /*for (i = 0; i<read; i++)
-                            {
-                                recievedMsg += Character.toString ((char) buffer[i]);
-                            }*/
-                            splitedStr = recievedMsg.split("\\s+");
-                            String imgName = "e"+splitedStr[0];
-                            int imgId = getResources().getIdentifier(imgName, "drawable", getPackageName());
-                            if (Integer.parseInt(splitedStr[3]) != 0) {
-                                isFav = true;
-                            } else {
-                                isFav = false;
+                        } else {
+                            while (is.available() > 0) {
+                                is.read(buffer);
+                                recievedMsg = new String(buffer, "UTF-8");
+                                for (i = 0; i < recievedMsg.split(",").length; i++) {
+                                    if (recievedMsgLong.contains("/")) {
+                                        recievedMsgLong = recievedMsgLong.split("/")[0];
+                                        break;
+                                    }
+                                }
                             }
+                        }
+                        Log.i("MyPrintingTab", Integer.toString(recievedMsg.length()));
+                        is.skip(is.available());
+                        dos.writeUTF("recieved");
+                        dos.flush();
+                    }
+                    splitedList = recievedMsgLong.split(",");
+                    for(i=0;i<splitedList.length;i++){
+                        splitedStr = splitedList[i].split("\\s+");
+                        if (splitedStr.length!=7) {
+                            List<String> list = new ArrayList<String>(Arrays.asList(splitedList));
+                            list.remove(splitedList[i]);
+                            splitedList = list.toArray(new String[0]);
+                        }
+                    }
+                    employees = new Employee[splitedList.length];
+                    favEmployeesBefore = new Boolean[splitedList.length];
+                    for(i=0;i<splitedList.length;i++){
+                        splitedStr = splitedList[i].split("\\s+");
+                        String imgName = "e"+splitedStr[0];
+                        int imgId = getResources().getIdentifier(imgName, "drawable", getPackageName());
+//                        Log.i("imgId"," " + imgId);
+                        Log.i("MyPrintingTab",splitedList[i]);
+                        if (Integer.parseInt(splitedStr[3]) != 0) {
+                            isFav = true;
+                        } else {
+                            isFav = false;
+                        }
+                        if (splitedStr.length==7) {
                             employees[i] = new Employee(
                                     splitedStr[1] + " " + splitedStr[2],
-                                    splitedStr[0],
+                                    splitedStr[6],
                                     Integer.parseInt(splitedStr[4]),
                                     Integer.parseInt(splitedStr[0]),
                                     isFav,
                                     Integer.parseInt(splitedStr[5]),
                                     imgId);
-                            dos.writeUTF("recieved");
-                            dos.flush();
                             favEmployeesBefore[i] = isFav;
-                            i++;
-                        } catch (Exception e){
-                            e.printStackTrace();
                         }
                     }
+                    dos.writeUTF("recieved");
+                    dos.flush();
                     is.close();
+                    dos.writeUTF("closing s");
+                    dos.flush();
+                    socket.close(); // Only close socket at end of program
+                    dos.close();
                 } else if (socket.getInputStream() == null) {
                     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     message = in.toString();
                 }
-
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
     }
+
+//    class MainThread implements Runnable {
+//
+//        @Override
+//        public void run() {
+//            try {
+//                int i;
+////                socket = new Socket(IP, PORT);
+//                socket = new Socket();
+//                socket.connect(new InetSocketAddress(IP,PORT),5000);
+//                socket.setSoTimeout(5000);
+//                if (socket == null) {
+//                    connectionSuccess = 0;
+//                    return;
+//                }
+//                connectionSuccess=1;
+//                dos = new DataOutputStream(socket.getOutputStream());
+//                String message = "get num employees";
+//                dos.writeUTF(message);
+//                dos.flush();
+//                byte[] bufferLen = new byte[5];
+//                String recievedMsg = "";
+//                is = socket.getInputStream();
+//                is.read(bufferLen);
+//                recievedMsg = new String(bufferLen, "UTF-8");
+//                employees = new Employee[Integer.parseInt(recievedMsg)];
+//                favEmployeesBefore = new Boolean[Integer.parseInt(recievedMsg)];
+//                dos = new DataOutputStream(socket.getOutputStream());
+//                message = "get employees";
+//                dos.writeUTF(message);
+//                dos.flush();
+//                is.read(bufferLen);
+//                recievedMsg = new String(bufferLen, "UTF-8");
+//                if (!recievedMsg.contains("recieved")){
+//                    System.out.print("error: could'nt get 'recieved' from server after sending 'get employees'.");
+//                }
+//                if(socket.getInputStream()!=null)
+//                {
+//                    recievedMsg = "";
+//                    is = socket.getInputStream();
+//                    bufferLen = new byte[2];
+//                    byte[] buffer;
+//                    int read; // array of binary of the given messgage!
+//                    String[] splitedStr;
+//                    Boolean isFav = false;
+//                    i=0;
+//                    while(!recievedMsg.toLowerCase().contains("done")){
+//                        // Getting len of next message:
+//                        try {
+//                            is = socket.getInputStream();
+//                            dos = new DataOutputStream(socket.getOutputStream());
+//                            is.read(bufferLen);
+//                            recievedMsg = new String(bufferLen, "UTF-8");
+//                            buffer = new byte[Integer.parseInt(recievedMsg)];
+//                            dos.writeUTF("recieved");
+//                            dos.flush();
+//                        } catch (Exception e){
+//                            e.printStackTrace();
+//                            buffer = new byte[40];
+//                        }
+//                        try {
+//                            // Getting next message:
+//                            is = socket.getInputStream();
+//                            dos = new DataOutputStream(socket.getOutputStream());
+//                            //read = is.read(buffer);
+//                            is.read(buffer);
+//                            recievedMsg = new String(buffer, "UTF-8");
+//                            if (recievedMsg.toLowerCase().contains("done")) {
+//                                dos.writeUTF("closing s");
+//                                dos.flush();
+//                                socket.close(); // Only close socket at end of program
+//                                dos.close();
+//                                break;
+//                            }
+//                            /*for (i = 0; i<read; i++)
+//                            {
+//                                recievedMsg += Character.toString ((char) buffer[i]);
+//                            }*/
+//                            splitedStr = recievedMsg.split("\\s+");
+//                            String imgName = "e"+splitedStr[0];
+//                            int imgId = getResources().getIdentifier(imgName, "drawable", getPackageName());
+//                            if (Integer.parseInt(splitedStr[3]) != 0) {
+//                                isFav = true;
+//                            } else {
+//                                isFav = false;
+//                            }
+//                            employees[i] = new Employee(
+//                                    splitedStr[1] + " " + splitedStr[2],
+//                                    splitedStr[0],
+//                                    Integer.parseInt(splitedStr[4]),
+//                                    Integer.parseInt(splitedStr[0]),
+//                                    isFav,
+//                                    Integer.parseInt(splitedStr[5]),
+//                                    imgId);
+//                            dos.writeUTF("recieved");
+//                            dos.flush();
+//                            favEmployeesBefore[i] = isFav;
+//                            i++;
+//                        } catch (Exception e){
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                    is.close();
+//                } else if (socket.getInputStream() == null) {
+//                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//                    message = in.toString();
+//                }
+//
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//        }
+//    }
 
     class changeThreadTest implements Runnable {
 

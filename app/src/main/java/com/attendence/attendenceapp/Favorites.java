@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Random;
 import android.content.Context;
 import android.graphics.*;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
+
 import java.net.*;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -45,7 +48,7 @@ public class Favorites extends Fragment {
     TextView textViewEmpty;
     public Employee[] employeesFavoritesTemp;
     public Employee[] employeesFavorites;
-    public Employee[] empsMissing, empsLate, empsOnTime;
+    public Employee[] empsMissing, empsPresent, empsLate, empsOnTime;
     String[] splitedStr;
     int[] splitedInt;
     EmployeesAdapter employeeAdapter;
@@ -56,6 +59,7 @@ public class Favorites extends Fragment {
     int currId;
     int firstClickW=0, firstClickM=0;
     Dialog myDialog;
+    private ImageLoader imageLoader;
 
 
     @Override
@@ -64,6 +68,7 @@ public class Favorites extends Fragment {
         myView = inflater.inflate(R.layout.fragment_favorites, container, false);
         getActivity().setTitle("שמורים");
         setHasOptionsMenu(true);
+        imageLoader = ImageLoader.getInstance();
         //new Thread(new MainThread()).start();
 //        FloatingActionButton fab = (FloatingActionButton) myView.findViewById(R.id.addFavorites);
         /*fab.setOnClickListener(new View.OnClickListener() {
@@ -123,9 +128,9 @@ public class Favorites extends Fragment {
         gvNamesFavorites.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                Snackbar.make(v, "pressed image id: " + employeesFavorites[position].getId(), Snackbar.LENGTH_LONG)
+                Snackbar.make(v, "מספר עובד: " + employeesFavorites[position].getId(), Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                history_dialog(employeesFavorites[position].getId());
+                history_dialog(employeesFavorites[position].getId(),employeesFavorites[position]);
             }
         });
 
@@ -135,7 +140,7 @@ public class Favorites extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        int m = 0, l = 0, o = 0;
+        int m = 0, l = 0, o = 0,p=0;
         for (Employee employee : employeesFavorites) { //
             if (employee == null) {
                 break;
@@ -149,11 +154,13 @@ public class Favorites extends Fragment {
             }
         }
         empsMissing = new Employee[m];
+        empsPresent = new Employee[o+l];
         empsLate = new Employee[l];
         empsOnTime = new Employee[o];
         l = 0;
         m = 0;
         o = 0;
+        p=0;
         for (Employee employee : employeesFavorites) {
             if (employee == null) {
                 break;
@@ -163,9 +170,13 @@ public class Favorites extends Fragment {
                 m++;
             } else if (employee.getStatus() == 1) {
                 empsLate[l] = employee;
+                empsPresent[p]= employee;
+                p++;
                 l++;
             } else if (employee.getStatus() == 2) {
                 empsOnTime[o] = employee;
+                empsPresent[p]= employee;
+                p++;
                 o++;
             }
         }
@@ -173,6 +184,11 @@ public class Favorites extends Fragment {
 
             case R.id.action_missing:
                 employeeAdapter = new EmployeesAdapter(getActivity(), empsMissing);
+                gvNamesFavorites.setAdapter(employeeAdapter);
+                employeeAdapter.notifyDataSetChanged();
+                return true;
+            case R.id.action_present:
+                employeeAdapter = new EmployeesAdapter(getActivity(), empsPresent);
                 gvNamesFavorites.setAdapter(employeeAdapter);
                 employeeAdapter.notifyDataSetChanged();
                 return true;
@@ -197,7 +213,7 @@ public class Favorites extends Fragment {
     }
 
     // Dialog to pick font size
-    public void history_dialog(int id) {
+    public void history_dialog(int id,Employee employee) {
         myDialog = new Dialog(getActivity());
         myDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         myDialog.setContentView(R.layout.history_dialog);
@@ -213,6 +229,25 @@ public class Favorites extends Fragment {
         adapter = new listViewAdapter(getActivity(), android.R.layout.simple_list_item_1, listItems);
         historyList.setAdapter(adapter);
         currId = id;
+
+        ImageView employeeImg = (ImageView) myDialog.findViewById(R.id.employee_image);
+        TextView employeeId = (TextView) myDialog.findViewById(R.id.employee_id);
+        TextView employeeName = (TextView) myDialog.findViewById(R.id.employee_name);
+        TextView employeeDepartment = (TextView) myDialog.findViewById(R.id.employee_department);
+        if (!employee.getImageName().contains("-")){
+            String imageUri = "https://i.imgur.com/" + employee.getImageName() + ".jpg";
+            imageLoader.displayImage(imageUri, employeeImg);
+        } else {
+            employeeImg.setImageResource(R.drawable.null1);
+        }
+        employeeId.setText("מספר זהות: " + employee.getId());
+        employeeName.setText("שם: " + employee.getName());
+        int dep = employee.getDepartment();
+        if (dep == 0){employeeDepartment.setText("מחלקה: משרד");}
+        else if (dep == 1){employeeDepartment.setText("מחלקה: פלסטיקה");}
+        else if (dep == 2){employeeDepartment.setText("מחלקה: ייצור");}
+        else if (dep == 3){employeeDepartment.setText("מחלקה: ייצור");}
+        else {employeeDepartment.setText("מחלקה: כללי");}
 
         Thread weekThread = new Thread(new weekThread());
         weekThread.start();
